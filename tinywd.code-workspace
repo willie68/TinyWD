@@ -6,12 +6,6 @@
 		{
 			"name": "TinyWD",
 			"path": "src/TinyWD"
-		},
-		{
-			"path": "../PedalTimer/src/PedalTimer"
-		},
-		{
-			"path": "../Tonnenpumpe2"
 		}
 	],
 	"settings": {}
