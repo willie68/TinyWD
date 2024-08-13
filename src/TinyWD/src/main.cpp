@@ -17,6 +17,8 @@ void wdCallback();
 void setup() {
   pinMode(resetPin, OUTPUT);
   digitalWrite(resetPin, HIGH);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
   wd_timer_id = timer.setInterval(30000, wdCallback);
 }
 
