@@ -1,47 +1,89 @@
 #include <Arduino.h>
 #include <SimpleTimer.h>
 
-const int wdPin = 0; // PB0, PB1, PB2
-const int resetPin = 3; //PB3
-const int ledPin = 4; //PB4
-
-int wd_timer_id;
-int currState = HIGH;
-int prevState = LOW;
+// pin definitions, as we use normal pin out pin number = PB#
+const int wdPin0 = 0; 
+const int wdPin1 = 1; 
+const int wdPin2 = 2; 
+const int resetPin = 3; 
+const int ledPin = 4; 
 
 // Create timer instances
-SimpleTimer timer;
+int wdTimerID; // the timer id from the lib
+SimpleTimer timer; // timer instance
 
-void wdCallback();
-
-void setup() {
-  pinMode(resetPin, OUTPUT);
-  digitalWrite(resetPin, HIGH);
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
-  wd_timer_id = timer.setInterval(30000, wdCallback);
+bool changed = false; // a input pn has been changed
+// this is the interrupt service routine, 
+// any change on the input pins will be regonised as change
+ISR (PCINT0_vect){
+    changed = true;
 }
 
-void ledHeartbeat(void) {
-  digitalWrite(ledPin, currState = digitalRead(wdPin));
-  if ( currState != prevState) { // State has changed
-    prevState = currState; // Update
-    timer.restartTimer(wd_timer_id);
+// resetting the host mcu
+void resetHost() {
+  for (byte i = 5; i > 0; i--) {
+    digitalWrite(ledPin, 1);
+    delay(100);
+    digitalWrite(ledPin, 0);
+    delay(100);
+  }
+  digitalWrite(resetPin, 0); 
+  delay(1000); 
+  digitalWrite(resetPin, 1);
+}
+
+
+void setup() {
+  // Setting wd reset and led pin to output mode
+  pinMode(resetPin, OUTPUT);
+  digitalWrite(resetPin, 1);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, 0);
+
+  // setting all watch pins to input mode with a pullup
+  pinMode(wdPin0, INPUT_PULLUP);
+  pinMode(wdPin1, INPUT_PULLUP);
+  pinMode(wdPin2, INPUT_PULLUP);
+
+  // setting up the pin change interrupt
+  sei();
+  GIMSK |= (1<<PCIE); // General Interrupt Mask Register
+  PCMSK = (1<<wdPin0) | (1<<wdPin1) | (1<<wdPin2); // monitor all input pins 
+  cli();
+
+  // setting the timer intervall, callback and starting the timer
+  wdTimerID = timer.setInterval(10000, resetHost);
+}
+
+// showing some heardbeat on the led
+unsigned long saved = 0;
+void heartbeat() {
+  if (millis() > saved) {
+    saved = millis() + 5000;
+    digitalWrite(ledPin, 1);
+    delay(250);
+    digitalWrite(ledPin, 0);
   }
 }
 
-void resetHost(int resetPin) {
-  digitalWrite(resetPin, LOW); 
-  delay(5000); 
-  digitalWrite(resetPin, HIGH);
+// checking if a pin has been changed
+void pinChange() {
+  if (changed) { // pin change interrupt occured
+    changed = false;
+    timer.restartTimer(wdTimerID);
+    digitalWrite(ledPin, 1);
+    delay(250);
+    digitalWrite(ledPin, 0);
+  }
 }
 
-void wdCallback() {
-  resetHost(resetPin); 
-}
 
 void loop() {
   timer.run();
-  ledHeartbeat();
-}
 
+  heartbeat();
+
+  pinChange();
+
+  delay(10);
+}
