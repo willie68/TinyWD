@@ -3,10 +3,10 @@
 
 // pin definitions, as we use normal pin out pin number = PB#
 const int wdPin0 = 0; 
-const int wdPin1 = 1; 
-const int wdPin2 = 2; 
-const int resetPin = 3; 
-const int ledPin = 4; 
+const int wdPin1 = 4; 
+const int wdPin2 = 3; 
+const int resetPin = 2; 
+const int ledPin = 1; 
 
 // Create timer instances
 int wdTimerID; // the timer id from the lib
@@ -21,6 +21,7 @@ ISR (PCINT0_vect){
 
 // resetting the host mcu
 void resetHost() {
+  timer.restartTimer(wdTimerID);
   for (byte i = 5; i > 0; i--) {
     digitalWrite(ledPin, 1);
     delay(100);
@@ -30,6 +31,7 @@ void resetHost() {
   digitalWrite(resetPin, 0); 
   delay(1000); 
   digitalWrite(resetPin, 1);
+  timer.restartTimer(wdTimerID);
 }
 
 
@@ -38,6 +40,8 @@ void setup() {
   pinMode(resetPin, OUTPUT);
   digitalWrite(resetPin, 1);
   pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, 1);
+  delay(500);
   digitalWrite(ledPin, 0);
 
   // setting all watch pins to input mode with a pullup
@@ -46,10 +50,10 @@ void setup() {
   pinMode(wdPin2, INPUT_PULLUP);
 
   // setting up the pin change interrupt
-  sei();
+  cli();
   GIMSK |= (1<<PCIE); // General Interrupt Mask Register
   PCMSK = (1<<wdPin0) | (1<<wdPin1) | (1<<wdPin2); // monitor all input pins 
-  cli();
+  sei();
 
   // setting the timer intervall, callback and starting the timer
   wdTimerID = timer.setInterval(10000, resetHost);
@@ -61,7 +65,7 @@ void heartbeat() {
   if (millis() > saved) {
     saved = millis() + 5000;
     digitalWrite(ledPin, 1);
-    delay(250);
+    delay(50);
     digitalWrite(ledPin, 0);
   }
 }
@@ -72,7 +76,7 @@ void pinChange() {
     changed = false;
     timer.restartTimer(wdTimerID);
     digitalWrite(ledPin, 1);
-    delay(250);
+    delay(100);
     digitalWrite(ledPin, 0);
   }
 }
