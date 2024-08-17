@@ -6,6 +6,10 @@
 		{
 			"name": "TinyWD",
 			"path": "src/TinyWD"
+		},
+		{
+			"name": "DigiBlink",
+			"path": "C:/Users/wklaa/Documents/PlatformIO/Projects/DigiBlink"
 		}
 	],
 	"settings": {}

@@ -1,12 +1,22 @@
 #include <Arduino.h>
 #include <SimpleTimer.h>
 
+#define digispark
+
+#ifdef digispark 
 // pin definitions, as we use normal pin out pin number = PB#
 const int wdPin0 = 0; 
 const int wdPin1 = 4; 
 const int wdPin2 = 3; 
 const int resetPin = 2; 
 const int ledPin = 1; 
+#elif __AVR_ATtiny85__ 
+const int wdPin0 = 0; 
+const int wdPin1 = 1; 
+const int wdPin2 = 2; 
+const int resetPin = 3; 
+const int ledPin = 4; 
+#endif
 
 // Create timer instances
 int wdTimerID; // the timer id from the lib
