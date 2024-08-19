@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include <SimpleTimer.h>
 
-#define digispark
-
-#ifdef digispark 
+#ifdef ARDUINO_AVR_DIGISPARK 
 // pin definitions, as we use normal pin out pin number = PB#
 const int wdPin0 = 0; 
 const int wdPin1 = 4; 
