@@ -16,6 +16,11 @@ const int resetPin = 3;
 const int ledPin = 4; 
 #endif
 
+// 10 seconds timeout
+#define TIMEOUT 10000
+// every 5 secondsa there is a little heartbeat flash
+#define HEATBEATTIME 5000
+
 // Create timer instances
 int wdTimerID; // the timer id from the lib
 SimpleTimer timer; // timer instance
@@ -64,14 +69,14 @@ void setup() {
   sei();
 
   // setting the timer intervall, callback and starting the timer
-  wdTimerID = timer.setInterval(10000, resetHost);
+  wdTimerID = timer.setInterval(TIMEOUT, resetHost);
 }
 
 // showing some heardbeat on the led
 unsigned long saved = 0;
 void heartbeat() {
   if (millis() > saved) {
-    saved = millis() + 5000;
+    saved = millis() + HEATBEATTIME;
     digitalWrite(ledPin, 1);
     delay(50);
     digitalWrite(ledPin, 0);
