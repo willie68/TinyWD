@@ -91,6 +91,10 @@ Und auf die Tonnenpumpeplatine aufgesteckt:
 | 1      | SMD LED grün          | 1206    |
 | 1      | SMD LED rot           | 1206    |
 
+## Andere mögliche Varianten
+
+![Versionsvergleich](images/all_versions.jpg)
+
 # Software
 
 Die Software für den WD findet ihr hier in dem Github Repo: https://github.com/willie68/TinyWD
