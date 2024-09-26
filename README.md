@@ -4,6 +4,10 @@ This is a hardware watchdog, build for Arduino and other MCU directly pluggable 
 
 It's build from an Attiny 45/85. 
 
+![arduino](./images/arduino.jpg)
+
+The NoSMD Version on an Uno.
+
 from here I describe the structure in German
 
 Dies ist ein Hardware Watchdog, aufgebaut mit einem ATTiny84. Ziel ist es, eine vorhanden Controllerplatine nachträglich mit einem Watchdog auszustatten. Denn manchmal reicht der in den Chips eingebaute Watchdog nicht aus, bzw. ist nicht zuverlässig genug. So ist es mir bei meinem Tonnenpumpen Projekt ergangen. Der im ATTiny84 eingebaute Watchdog konnte den Controller nicht zuverlässig vor einem Einfrieren schützen. Immer wieder musste ich den Controller per Hand Resetten. Natürlich gibt es auch fertige Watchdogs, meist in Transistor oder DIP-8 Form. Doch die Beschaffung war schwierig und außerdem macht es doch Spaß, sowas selber zu designen. Deswegen habe ich auf Basis des ATTiny85 diesen Hardware Watchdog gebaut, der auf einen normalen 6-Pol ISP Programmierstecker aufgesteckt werden kann.  Zunächst aber habe ich eine Variante für den Digispark entworfen, um die prinzipielle Funktionsweise zu testen. Der Vorteil der ISP Aufsteckvariante ist der, das man ja üblicherweise die Pins des ISP selten für seine eigene Schaltung verwendet. Und wenn, dann doch als SPI (was direkt den WD triggern könnte) um nicht durch die eigene Schaltung das ISP zu verwirren.  																																											
