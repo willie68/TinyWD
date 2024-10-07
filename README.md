@@ -14,21 +14,17 @@ Dies ist ein Hardware Watchdog, aufgebaut mit einem ATTiny84. Ziel ist es, eine 
 
 # Digispark Version
 
-Als erste Variante hab ich den Digispark ale Entwicklungsplatform benutzt. 
-
 ![Digispark](./images/digispark.jpg)
 
-Die ersten Tests hab ich mit einem Digispark gemacht. Leider ergibt sich durch den USB Bootloader, dass man beim Digispark nicht alle Pins für den Watchdog verwenden kann. Bei den Pins für den USB kommt es dazu, dass der Digispark einfach nicht starten möchte. Ursache ist der [Micronucleus](https://github.com/micronucleus/micronucleus) Bootloader.
+Die ersten Tests hab ich mit einem Digispark gemacht. Der Digispark ist ein kleines direkt an einen USB-A Port steckbares Controllerboard. Der Controller ist ein ATTiny84. Zusätzlich ist noch ein 78M05 Spannungsregler eingebaut, damit man die Platine auch außerhalb von USB (mit 6V-12V) betreiben kann. 
 
-Genauer: Der ATTiny85 arbeitet mit einem Micronucleus Bootlaoder. Dieser simuliert über 2 Pins (3,4) ein USB Schnittstelle. Diese wird dann vom Host (PC) erkannt und man kann dann das Programm in den ATTiny hochladen. 
+Auf dem ATTiny ist ein Bootloader, der die Kommunikation per USB direkt nach dem einstecken ermöglicht. D.h. ein UPload neuer Sketches ist nur direkt nach dem Einstecken möglich. Leider ergibt sich durch den USB Bootloader ein Problem, man kann beim Digispark nicht alle Pins für den Watchdog verwenden. 
 
-Der Bootloader hat ich 2048 Bytes vom Flash reserviert. D.h. die Anwenderprogramm dürfen nicht mahr als 6KB haben. 
+Genauer: Der ATTiny85 arbeitet mit einem Micronucleus Bootlaoder. Dieser simuliert über 2 Pins (3,4) ein USB Schnittstelle. Diese wird dann vom Host (PC) erkannt und man kann dann das Programm in den ATTiny hochladen. Der Bootloader hat sich 2048 Bytes vom Flash reserviert. D.h. die Anwenderprogramm dürfen nicht mehr als 6KB haben. 
 
-Daneben gibt es noch weitere Einschränkungen. 
-Für den Watchdog fand ich folgende Pin Zuordnung eigentlich optimal, da sie mit dem ISP korrosdondiert. 
-Einzig der Reset Pin musste so auf einen anderen Pin gelegt werden.
-So ist auch die eigene Hardware gebaut. PB4 ist dabei für die visuelle Rückmeldung (LED) zuständig. 
-Beim Digispark sind aber leider verschiedene Änderungen nötig.
+Sind die USB-Pins mit dem ISP verbunden, will der Digispark einfach nicht starten. Ursache ist der [Micronucleus](https://github.com/micronucleus/micronucleus) Bootloader, der anscheinend mit der äußeren Beschaltung des ISP nicht zurecht kommt.  
+
+Deswegen sind beim Digispark verschiedene Änderungen gegenüber der PCB Versionen nötig.
 PB1 ist für die Onboard LED da.
 PB3 ist ein USB Data Pin und kann leider somit nicht als Reset Output funktionieren. Das Problem ist, bei einem Neustart setzt der Micronucleus Bootloader diesen Pin auf 0. Somit wird dann gesteuerte Controller ion den Resetmodus versetzt. Auch Pin 4 wird Ausgang benutzt. Bei der o.g. Beschaltung hängt sich dann aber der Bootlaoder auf, normalerweise startet der Bootloader nach 6 Sekunden das Anwenderprogramm (in unserem Fall den Watchdog) mit der äußeren Beschaltung tat er das aber nicht. Somit waren sowohl der Digispark wie auch der angeschlossene Controller geblockt. 
 Deswegen gilt für den Digispark eine andere Pinbelegung.
@@ -142,7 +138,7 @@ Die Software auf der Gegenseiten ist recht einfach. Man mus nur immer einen der 
 
 das geht recht einfach mit `digitalWrite(pin, !digitalRead(pin))` 
 
-Bei meiner Tonnenpumpe musste ich allerdings etwas anders vorgehen, da der Pin für den Heartbeat bereits anderweitig (LED Pumpe) vergeben war. Also gebe ich hier ca. jede Sekunde einen kurzen Implus (ca 10ms) auf den Pin. Um den Pin Status nicht zu verlieren, speichere ich mir diesen einmal vorher ab.
+Bei meiner Tonnenpumpe musste ich allerdings etwas anders vorgehen, da der Pin für den Heartbeat bereits anderweitig (LED Pumpe) vergeben war. Also gebe ich hier ca. jede Sekunde einen kurzen Impuls (ca 10ms) auf den Pin. Um den Pin Status nicht zu verlieren, speichere ich mir diesen einmal vorher ab.
 
 Wenn man den TinyWD aber von vornherein berücksichtigt, erspart man sich diesen zusätzlichen Aufwand.    
 
@@ -166,11 +162,11 @@ Die Software ist sehr einfach.
 In ''void setup()'' setzte ich die Ein/Ausgänge entsprechend. Eingänge jeweils mit Pullup Widerstand.
 Zur Startsignalisierung blinkt einmal kurz die LED.
 Im nächsten Schritt werden für die Eingänge sog. PinChange Interrupts konfiguriert. D.h. ändert einer der Eingänge seinen Status, wird automatisch ein Interrupt ausgeführt.
-Dieseer steht in der Methode ISR (PCINT0_vect).
+Dieser steht in der Methode ISR (PCINT0_vect).
 
-Als letztes erzeuge ich mir einen Timer, der automatisch alle 10 Sekunden feuert. Diese Routine setzt dann ein Flag, welcher in der ''void main()'' dann getestet wird. In der main wird auch ein Heartbeat Signal an die LED gesendet.
+Als letztes erzeuge ich mir einen Timer, der automatisch alle 10 Sekunden feuert. Diese Routine setzt dann ein Flag, welcher in der ''`void main()'`' dann getestet wird. In der `main` wird auch ein Heartbeat Signal an die LED gesendet.
 
 ### Funktionsweise
 
-In der ISR wird einfach ein Variable namens changed auf true gesetzt. In der Hauptloop wird genau auf changed == true geprüft und dann der TImer resettet. Changed wird dann wieder auf false gesetzt und eine visuelle Rückmeldung gegeben.
+In der ISR wird einfach ein Variable namens changed auf `true` gesetzt. In der Hauptloop wird genau auf `changed == true` geprüft und dann der Timer resettet. Changed wird dann wieder auf `false` gesetzt und eine visuelle Rückmeldung gegeben.
 Fehlt länger als 10 Sekunden der Interrupt, weil sich kein Pin geändert hat, löst der Timer die Reset Methode aus. Diese legt den Resetpin für 1 Sekunde auf GND. Danach hat der angeschlossene Controller wieder 10 Sekunden Zeit, einen der Eingänge zu toggeln.
