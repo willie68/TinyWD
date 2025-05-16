@@ -19,7 +19,7 @@ const int ledPin = 4;
 // 10 seconds timeout
 #define TIMEOUT 10000
 // every 5 secondsa there is a little heartbeat flash
-#define HEATBEATTIME 5000
+#define HEARTBEATTIME 5000
 
 // Create timer instances
 int wdTimerID; // the timer id from the lib
@@ -72,11 +72,11 @@ void setup() {
   wdTimerID = timer.setInterval(TIMEOUT, resetHost);
 }
 
-// showing some heardbeat on the led
+// showing some heartbeat on the led
 unsigned long saved = 0;
 void heartbeat() {
   if (millis() > saved) {
-    saved = millis() + HEATBEATTIME;
+    saved = millis() + HEARTBEATTIME;
     digitalWrite(ledPin, 1);
     delay(50);
     digitalWrite(ledPin, 0);
